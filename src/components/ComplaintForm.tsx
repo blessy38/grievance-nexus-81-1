@@ -7,10 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Send, User, MapPin, Building } from "lucide-react";
+import type { Complaint } from "@/types";
 
 interface ComplaintFormProps {
   userData: any;
-  onSuccess: (complaintId: string) => void;
+  onSuccess: (complaint: Complaint) => void;
 }
 
 export function ComplaintForm({ userData, onSuccess }: ComplaintFormProps) {
@@ -46,14 +47,31 @@ export function ComplaintForm({ userData, onSuccess }: ComplaintFormProps) {
 
     // Simulate API call
     setTimeout(() => {
-      const complaintId = `GRV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9999) + 1).padStart(3, '0')}`;
-      
+      const now = new Date();
+      const complaintId = `GRV-${now.getFullYear()}-${String(Math.floor(Math.random() * 9999) + 1).padStart(3, '0')}`;
+
+      const complaint: Complaint = {
+        complaintId,
+        userName: formData.userName,
+        address: formData.address,
+        issue: formData.issue,
+        department: formData.department,
+        status: "Submitted",
+        submissionDate: now.toISOString(),
+        lastUpdated: now.toISOString(),
+        timeline: [
+          { status: "Submitted", date: now.toISOString(), description: "Complaint received and registered" },
+          { status: "Delivered to Officials", date: new Date(now.getTime() + 60 * 60 * 1000).toISOString(), description: "Forwarded to the relevant department for review" },
+          { status: "Action Taken", date: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(), description: "Initial corrective steps initiated by department" }
+        ]
+      };
+
       toast({
         title: "Complaint Submitted Successfully",
         description: `Your complaint has been registered with ID: ${complaintId}`,
       });
-      
-      onSuccess(complaintId);
+
+      onSuccess(complaint);
       setIsLoading(false);
     }, 1500);
   };

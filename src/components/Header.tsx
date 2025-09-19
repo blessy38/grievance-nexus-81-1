@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Shield, Menu, X } from "lucide-react";
+import { Shield, Menu, X, Home, LogIn, UserPlus, LayoutDashboard, FileText, Eye } from "lucide-react";
 import { useState } from "react";
 
 interface HeaderProps {
@@ -14,14 +14,14 @@ export function Header({ currentView, onViewChange, isLoggedIn, onLogout }: Head
 
   const navItems = isLoggedIn
     ? [
-        { id: 'dashboard', label: 'Dashboard' },
-        { id: 'submit', label: 'Submit Complaint' },
-        { id: 'track', label: 'Track Complaint' },
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { id: 'submit', label: 'Submit Complaint', icon: FileText },
+        { id: 'track', label: 'Track Complaint', icon: Eye },
       ]
     : [
-        { id: 'home', label: 'Home' },
-        { id: 'login', label: 'Login' },
-        { id: 'register', label: 'Register' },
+        { id: 'home', label: 'Home', icon: Home },
+        { id: 'login', label: 'Login', icon: LogIn },
+        { id: 'register', label: 'Register', icon: UserPlus },
       ];
 
   return (
@@ -46,11 +46,13 @@ export function Header({ currentView, onViewChange, isLoggedIn, onLogout }: Head
                 onClick={() => onViewChange(item.id)}
                 className="text-sm"
               >
+                <item.icon className="mr-2 h-4 w-4" />
                 {item.label}
               </Button>
             ))}
             {isLoggedIn && (
               <Button variant="outline" onClick={onLogout} className="text-sm">
+                <LogIn className="mr-2 h-4 w-4" />
                 Logout
               </Button>
             )}
@@ -80,6 +82,7 @@ export function Header({ currentView, onViewChange, isLoggedIn, onLogout }: Head
                 }}
                 className="w-full justify-start"
               >
+                <item.icon className="mr-2 h-4 w-4" />
                 {item.label}
               </Button>
             ))}
@@ -92,6 +95,7 @@ export function Header({ currentView, onViewChange, isLoggedIn, onLogout }: Head
                 }} 
                 className="w-full justify-start"
               >
+                <LogIn className="mr-2 h-4 w-4" />
                 Logout
               </Button>
             )}

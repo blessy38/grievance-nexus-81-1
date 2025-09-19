@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Clock, CheckCircle, Users, ArrowRight } from "lucide-react";
+import { FileText, Clock, CheckCircle, Users, ArrowRight, Heart, Trash2, Bus, GraduationCap, Shield, UserPlus, LogIn } from "lucide-react";
 
 interface HomePageProps {
   onViewChange: (view: string) => void;
@@ -36,10 +36,10 @@ export function HomePage({ onViewChange }: HomePageProps) {
   ];
 
   const departments = [
-    { name: "Healthcare", count: "24 active", color: "bg-status-progress" },
-    { name: "Sanitation", count: "18 active", color: "bg-status-submitted" },
-    { name: "Transportation", count: "31 active", color: "bg-status-resolved" },
-    { name: "Education", count: "12 active", color: "bg-secondary" }
+    { name: "Healthcare", icon: Heart, color: "bg-red-500", description: "Medical & Health Services" },
+    { name: "Sanitation", icon: Trash2, color: "bg-green-500", description: "Waste Management & Cleaning" },
+    { name: "Transportation", icon: Bus, color: "bg-blue-500", description: "Roads & Public Transport" },
+    { name: "Education", icon: GraduationCap, color: "bg-purple-500", description: "Schools & Learning" }
   ];
 
   return (
@@ -49,14 +49,13 @@ export function HomePage({ onViewChange }: HomePageProps) {
         <div className="container mx-auto max-w-4xl text-center">
           <div className="animate-fade-in">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-              Your Voice,{" "}
+              Municipal Services{" "}
               <span className="bg-gradient-primary bg-clip-text text-transparent">
-                Our Priority
+                Grievance Portal
               </span>
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              A comprehensive platform for citizens to submit, track, and resolve grievances 
-              with municipal services efficiently and transparently.
+              Submit, track, and resolve your municipal service complaints efficiently and transparently.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
@@ -65,15 +64,18 @@ export function HomePage({ onViewChange }: HomePageProps) {
                 onClick={() => onViewChange('register')}
                 className="group"
               >
-                Get Started
+                <UserPlus className="mr-2 h-5 w-5" />
+                Sign Up
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button 
                 variant="outline" 
                 size="lg" 
                 onClick={() => onViewChange('login')}
+                className="group"
               >
-                Already Registered? Login
+                <LogIn className="mr-2 h-5 w-5" />
+                Login
               </Button>
             </div>
           </div>
@@ -124,13 +126,15 @@ export function HomePage({ onViewChange }: HomePageProps) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {departments.map((dept, index) => (
-              <Card key={index} className="text-center group hover:shadow-md transition-all duration-300 bg-background border">
+              <Card key={index} className="text-center group hover:shadow-md transition-all duration-300 bg-background border hover:scale-105">
                 <CardContent className="pt-6">
-                  <div className={`w-3 h-3 rounded-full ${dept.color} mx-auto mb-3`}></div>
+                  <div className={`w-12 h-12 rounded-full ${dept.color} mx-auto mb-3 flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                    <dept.icon className="h-6 w-6 text-white" />
+                  </div>
                   <h3 className="font-semibold text-foreground mb-2">{dept.name}</h3>
-                  <Badge variant="secondary" className="text-xs">
-                    {dept.count}
-                  </Badge>
+                  <p className="text-xs text-muted-foreground">
+                    {dept.description}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -144,10 +148,10 @@ export function HomePage({ onViewChange }: HomePageProps) {
           <Card className="bg-gradient-hero border-0 text-white">
             <CardContent className="py-12">
               <h2 className="text-3xl font-bold mb-4">
-                Ready to Make Your Voice Heard?
+                Ready to Report Your Issue?
               </h2>
               <p className="text-primary-foreground/90 mb-8 max-w-2xl mx-auto">
-                Join thousands of citizens who have successfully resolved their concerns 
+                Join thousands of citizens who have successfully resolved their municipal service concerns 
                 through our transparent and efficient grievance system.
               </p>
               <Button 
@@ -156,7 +160,8 @@ export function HomePage({ onViewChange }: HomePageProps) {
                 onClick={() => onViewChange('register')}
                 className="group"
               >
-                Register Now
+                <Shield className="mr-2 h-5 w-5" />
+                Sign Up Now
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </CardContent>

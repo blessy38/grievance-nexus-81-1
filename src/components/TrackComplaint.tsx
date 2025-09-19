@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,12 +9,14 @@ import { Search, Calendar, MapPin, Building, FileText, Clock, CheckCircle, XCirc
 
 interface TrackComplaintProps {
   userData: any;
+  externalComplaints?: any[];
+  initialComplaintId?: string;
 }
 
-export function TrackComplaint({ userData }: TrackComplaintProps) {
+export function TrackComplaint({ userData, externalComplaints = [], initialComplaintId }: TrackComplaintProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [complaintId, setComplaintId] = useState("");
+  const [complaintId, setComplaintId] = useState(initialComplaintId || "");
   const [complaintData, setComplaintData] = useState<any>(null);
 
   // Mock complaint database
@@ -64,6 +66,25 @@ export function TrackComplaint({ userData }: TrackComplaintProps) {
     }
   };
 
+  const allComplaints = useMemo(() => {
+    const map: Record<string, any> = { ...mockComplaints };
+    for (const c of externalComplaints) {
+      map[c.complaintId] = c;
+    }
+    return map;
+  }, [externalComplaints]);
+
+  useEffect(() => {
+    if (initialComplaintId) {
+      // Auto search when arriving with a prefilled ID
+      const found = allComplaints[initialComplaintId as keyof typeof allComplaints];
+      if (found) {
+        setComplaintData(found);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialComplaintId]);
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -80,7 +101,7 @@ export function TrackComplaint({ userData }: TrackComplaintProps) {
 
     // Simulate API call
     setTimeout(() => {
-      const found = mockComplaints[complaintId as keyof typeof mockComplaints];
+      const found = allComplaints[complaintId as keyof typeof allComplaints];
       if (found) {
         setComplaintData(found);
         toast({
@@ -258,27 +279,54 @@ export function TrackComplaint({ userData }: TrackComplaintProps) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {complaintData.timeline.map((item: any, index: number) => (
-                    <div key={index} className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                          {getStatusIcon(item.status)}
+                  {complaintData.timeline.map((item: any, index: number) => {
+                    const isCompleted = index < complaintData.timeline.length - 1 || complaintData.status === "Resolved";
+                    const isCurrent = index === complaintData.timeline.length - 1 && complaintData.status !== "Resolved";
+                    
+                    return (
+                      <div key={index} className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            isCompleted 
+                              ? 'bg-green-500 text-white' 
+                              : isCurrent 
+                                ? 'bg-blue-500 text-white' 
+                                : 'bg-gray-300 text-gray-600'
+                          }`}>
+                            {getStatusIcon(item.status)}
+                          </div>
+                          {index < complaintData.timeline.length - 1 && (
+                            <div className={`w-1 h-8 mt-2 ${
+                              isCompleted ? 'bg-green-500' : 'bg-gray-300'
+                            }`}></div>
+                          )}
                         </div>
-                        {index < complaintData.timeline.length - 1 && (
-                          <div className="w-0.5 h-8 bg-border mt-2"></div>
-                        )}
-                      </div>
-                      <div className="flex-1 pb-4">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-medium text-foreground">{item.status}</h4>
-                          <Badge variant="outline" className="text-xs">
-                            {formatDate(item.date)}
-                          </Badge>
+                        <div className="flex-1 pb-4">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className={`font-medium ${
+                              isCompleted ? 'text-green-700' : isCurrent ? 'text-blue-700' : 'text-gray-600'
+                            }`}>
+                              {item.status}
+                            </h4>
+                            <Badge variant="outline" className="text-xs">
+                              {formatDate(item.date)}
+                            </Badge>
+                            {isCompleted && (
+                              <Badge variant="default" className="text-xs bg-green-500">
+                                ✓ Completed
+                              </Badge>
+                            )}
+                            {isCurrent && (
+                              <Badge variant="default" className="text-xs bg-blue-500">
+                                In Progress
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">{item.description}</p>
                         </div>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus, LogIn, Mail, Lock, User, Phone, MapPin } from "lucide-react";
+import { UserPlus, LogIn, Mail, Lock, User, Phone, MapPin, Eye, EyeOff, Shield, CheckCircle } from "lucide-react";
 
 interface AuthFormsProps {
   isLogin: boolean;
@@ -16,6 +16,7 @@ interface AuthFormsProps {
 export function AuthForms({ isLogin, onSuccess, onToggleMode }: AuthFormsProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -137,14 +138,30 @@ export function AuthForms({ isLogin, onSuccess, onToggleMode }: AuthFormsProps) 
                 <Lock className="h-4 w-4" />
                 Password
               </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={(e) => handleInputChange("password", e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  required
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
             </div>
 
             {!isLogin && (
@@ -187,7 +204,26 @@ export function AuthForms({ isLogin, onSuccess, onToggleMode }: AuthFormsProps) 
               disabled={isLoading}
               variant="default"
             >
-              {isLoading ? "Processing..." : (isLogin ? "Sign In" : "Create Account")}
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  {isLogin ? (
+                    <>
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Sign In
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Create Account
+                    </>
+                  )}
+                </>
+              )}
             </Button>
           </form>
 
@@ -196,7 +232,17 @@ export function AuthForms({ isLogin, onSuccess, onToggleMode }: AuthFormsProps) 
               {isLogin ? "Don't have an account? " : "Already have an account? "}
             </span>
             <Button variant="link" onClick={onToggleMode} className="p-0 h-auto font-semibold">
-              {isLogin ? "Register here" : "Sign in here"}
+              {isLogin ? (
+                <>
+                  <UserPlus className="mr-1 h-3 w-3" />
+                  Register here
+                </>
+              ) : (
+                <>
+                  <LogIn className="mr-1 h-3 w-3" />
+                  Sign in here
+                </>
+              )}
             </Button>
           </div>
         </CardContent>

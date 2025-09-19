@@ -5,11 +5,14 @@ import { AuthForms } from "@/components/AuthForms";
 import { Dashboard } from "@/components/Dashboard";
 import { ComplaintForm } from "@/components/ComplaintForm";
 import { TrackComplaint } from "@/components/TrackComplaint";
+import type { Complaint } from "@/types";
 
 const Index = () => {
   const [currentView, setCurrentView] = useState("home");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState<any>(null);
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [lastSubmittedId, setLastSubmittedId] = useState<string | null>(null);
 
   const handleLogin = (userData: any) => {
     setIsLoggedIn(true);
@@ -23,9 +26,10 @@ const Index = () => {
     setCurrentView("home");
   };
 
-  const handleComplaintSubmission = (complaintId: string) => {
-    // After successful submission, redirect to dashboard
-    setCurrentView("dashboard");
+  const handleComplaintSubmission = (complaint: Complaint) => {
+    setComplaints((prev) => [complaint, ...prev]);
+    setLastSubmittedId(complaint.complaintId);
+    setCurrentView("track");
   };
 
   const renderContent = () => {
@@ -55,13 +59,13 @@ const Index = () => {
     // Logged in views
     switch (currentView) {
       case "dashboard":
-        return <Dashboard userData={userData} onViewChange={setCurrentView} />;
+        return <Dashboard userData={userData} onViewChange={setCurrentView} userComplaints={complaints} />;
       case "submit":
         return <ComplaintForm userData={userData} onSuccess={handleComplaintSubmission} />;
       case "track":
-        return <TrackComplaint userData={userData} />;
+        return <TrackComplaint userData={userData} externalComplaints={complaints} initialComplaintId={lastSubmittedId ?? undefined} />;
       default:
-        return <Dashboard userData={userData} onViewChange={setCurrentView} />;
+        return <Dashboard userData={userData} onViewChange={setCurrentView} userComplaints={complaints} />;
     }
   };
 
