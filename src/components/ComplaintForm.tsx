@@ -8,9 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Send, User, MapPin, Building } from "lucide-react";
 import type { Complaint } from "@/types";
+import { complaintsService } from "@/lib/complaints";
+import type { UserData } from "@/lib/auth";
 
 interface ComplaintFormProps {
-  userData: any;
+  userData: UserData;
   onSuccess: (complaint: Complaint) => void;
 }
 
@@ -45,35 +47,31 @@ export function ComplaintForm({ userData, onSuccess }: ComplaintFormProps) {
       return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      const now = new Date();
-      const complaintId = `GRV-${now.getFullYear()}-${String(Math.floor(Math.random() * 9999) + 1).padStart(3, '0')}`;
-
-      const complaint: Complaint = {
-        complaintId,
+    try {
+      const complaint = await complaintsService.submitComplaint({
         userName: formData.userName,
         address: formData.address,
         issue: formData.issue,
         department: formData.department,
-        status: "Submitted",
-        submissionDate: now.toISOString(),
-        lastUpdated: now.toISOString(),
-        timeline: [
-          { status: "Submitted", date: now.toISOString(), description: "Complaint received and registered" },
-          { status: "Delivered to Officials", date: new Date(now.getTime() + 60 * 60 * 1000).toISOString(), description: "Forwarded to the relevant department for review" },
-          { status: "Action Taken", date: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(), description: "Initial corrective steps initiated by department" }
-        ]
-      };
+        status: "Submitted"
+      }, userData.uid);
 
+      // Show success message immediately
       toast({
-        title: "Complaint Submitted Successfully",
-        description: `Your complaint has been registered with ID: ${complaintId}`,
+        title: "✅ Complaint Submitted Successfully!",
+        description: `Your complaint has been registered with ID: ${complaint.complaintId}. You can track its progress using the Track Complaint feature.`,
       });
 
       onSuccess(complaint);
+    } catch (error: any) {
+      toast({
+        title: "Submission Failed",
+        description: error.message || "Failed to submit complaint. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -177,7 +175,10 @@ export function ComplaintForm({ userData, onSuccess }: ComplaintFormProps) {
                   size="lg"
                 >
                   {isLoading ? (
-                    "Submitting..."
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Submitting...
+                    </>
                   ) : (
                     <>
                       <Send className="mr-2 h-4 w-4" />

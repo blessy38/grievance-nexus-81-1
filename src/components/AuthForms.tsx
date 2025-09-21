@@ -6,10 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, LogIn, Mail, Lock, User, Phone, MapPin, Eye, EyeOff, Shield, CheckCircle } from "lucide-react";
+import { authService, type UserData } from "@/lib/auth";
 
 interface AuthFormsProps {
   isLogin: boolean;
-  onSuccess: (userData: any) => void;
+  onSuccess: (userData: UserData) => void;
   onToggleMode: () => void;
 }
 
@@ -29,19 +30,14 @@ export function AuthForms({ isLogin, onSuccess, onToggleMode }: AuthFormsProps) 
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
       if (isLogin) {
-        // Mock login validation
+        // Firebase login
         if (formData.email && formData.password) {
-          const userData = {
-            userId: "user_" + Date.now(),
-            email: formData.email,
-            name: formData.name || "John Doe"
-          };
+          const userData = await authService.login(formData.email, formData.password);
           onSuccess(userData);
           toast({
-            title: "Login Successful",
+            title: "✅ Login Successful!",
             description: "Welcome back! You've been logged in successfully.",
           });
         } else {
@@ -52,17 +48,17 @@ export function AuthForms({ isLogin, onSuccess, onToggleMode }: AuthFormsProps) 
           });
         }
       } else {
-        // Mock registration validation
+        // Firebase registration
         if (formData.name && formData.email && formData.password && formData.phoneNumber && formData.address) {
-          const userData = {
-            userId: "user_" + Date.now(),
-            email: formData.email,
-            name: formData.name
-          };
+          const userData = await authService.register(formData.email, formData.password, {
+            name: formData.name,
+            phoneNumber: formData.phoneNumber,
+            address: formData.address
+          });
           onSuccess(userData);
           toast({
-            title: "Registration Successful",
-            description: "Your account has been created successfully!",
+            title: "✅ Registration Successful!",
+            description: "Your account has been created successfully! You can now submit complaints.",
           });
         } else {
           toast({
@@ -72,8 +68,15 @@ export function AuthForms({ isLogin, onSuccess, onToggleMode }: AuthFormsProps) 
           });
         }
       }
+    } catch (error: any) {
+      toast({
+        title: isLogin ? "Login Failed" : "Registration Failed",
+        description: error.message || "An error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -207,7 +210,7 @@ export function AuthForms({ isLogin, onSuccess, onToggleMode }: AuthFormsProps) 
               {isLoading ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Processing...
+                  {isLogin ? "Signing In..." : "Creating Account..."}
                 </>
               ) : (
                 <>

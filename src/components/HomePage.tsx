@@ -77,6 +77,14 @@ export function HomePage({ onViewChange }: HomePageProps) {
                 <LogIn className="mr-2 h-5 w-5" />
                 Login
               </Button>
+              <Button 
+                variant="secondary" 
+                size="lg" 
+                onClick={() => onViewChange('firebase-test')}
+                className="group"
+              >
+                🔧 Test Firebase
+              </Button>
             </div>
           </div>
         </div>

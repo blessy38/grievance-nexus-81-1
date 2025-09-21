@@ -6,10 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Calendar, MapPin, Building, FileText, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { complaintsService } from "@/lib/complaints";
+import type { Complaint } from "@/types";
+import type { UserData } from "@/lib/auth";
 
 interface TrackComplaintProps {
-  userData: any;
-  externalComplaints?: any[];
+  userData: UserData;
+  externalComplaints?: Complaint[];
   initialComplaintId?: string;
 }
 
@@ -17,7 +20,7 @@ export function TrackComplaint({ userData, externalComplaints = [], initialCompl
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [complaintId, setComplaintId] = useState(initialComplaintId || "");
-  const [complaintData, setComplaintData] = useState<any>(null);
+  const [complaintData, setComplaintData] = useState<Complaint | null>(null);
 
   // Mock complaint database
   const mockComplaints = {
@@ -99,11 +102,23 @@ export function TrackComplaint({ userData, externalComplaints = [], initialCompl
       return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      const found = allComplaints[complaintId as keyof typeof allComplaints];
-      if (found) {
-        setComplaintData(found);
+    try {
+      // First check external complaints (from user's submitted complaints)
+      const foundExternal = allComplaints[complaintId];
+      if (foundExternal) {
+        setComplaintData(foundExternal);
+        toast({
+          title: "Complaint Found",
+          description: `Displaying details for ${complaintId}`,
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // If not found in external complaints, try to fetch from Firestore
+      const complaint = await complaintsService.getComplaintById(complaintId);
+      if (complaint) {
+        setComplaintData(complaint);
         toast({
           title: "Complaint Found",
           description: `Displaying details for ${complaintId}`,
@@ -116,8 +131,16 @@ export function TrackComplaint({ userData, externalComplaints = [], initialCompl
           variant: "destructive",
         });
       }
+    } catch (error: any) {
+      setComplaintData(null);
+      toast({
+        title: "Search Failed",
+        description: error.message || "Failed to search for complaint. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const getStatusIcon = (status: string) => {
